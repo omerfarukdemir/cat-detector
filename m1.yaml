@@ -1,0 +1,17 @@
+name: cat-detector
+
+channels:
+  - conda-forge
+  - apple
+
+dependencies:
+  - conda-forge::python=3.10
+  - conda-forge::pip
+  - apple::tensorflow-deps
+
+  - pip:
+    - tensorflow-macos==2.10.0
+    - tensorflow-metal==0.6.0
+    - matplotlib==3.6.1
+    - flask===2.2.2
+    - python-dotenv==0.21.0

@@ -1,0 +1,7 @@
+.idea
+__pycache__
+model
+dataset
+image
+.DS_Store
+.env

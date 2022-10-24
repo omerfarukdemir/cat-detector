@@ -94,9 +94,8 @@ class Detector:
     @staticmethod
     def adjust_image(image: Image) -> numpy.ndarray:
         image: Image = image.resize((WIDTH, HEIGHT))
-        image: numpy.ndarray = img_to_array(image)
-        image = image.astype('float32')
-        image /= 255.0
-        image = numpy.expand_dims(image, 0)
+
+        image: numpy.ndarray = img_to_array(image).astype('float32') / 255.0
+        image: numpy.ndarray = numpy.expand_dims(image, 0)
 
         return image

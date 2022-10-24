@@ -1,10 +1,11 @@
 import base64
+import time
 from io import BytesIO
 from typing import List
 
 from PIL import Image
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
 from detection import Detection
@@ -17,12 +18,23 @@ app = FastAPI()
 detector = Detector({'cat'})
 
 
-class Request(BaseModel):
+class DetectRequest(BaseModel):
     image: str
 
 
-@app.post("/detect")
-def detect(request: Request):
+@app.middleware('http')
+async def request_time(request: Request, call_next):
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    response.headers["x-request-time"] = str(round(time.time() - start_time, 3))
+
+    return response
+
+
+@app.post('/detect')
+def detect(request: DetectRequest):
     image_bytes: BytesIO = BytesIO(base64.b64decode(request.image))
 
     image: Image = Image.open(image_bytes)

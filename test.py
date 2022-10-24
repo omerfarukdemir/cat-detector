@@ -38,11 +38,13 @@ def draw(file_path: str, detections: List[Detection]):
 
         axes.add_patch(rectangle)
 
-        label = f'{detection.label.upper()} [{detection.score}]'
+        info = f'{detection.label.upper()} [{detection.score}]'
 
-        pyplot.text(detection.x_min, detection.y_min - 20, label, color='red', fontdict={'size': 100})
+        pyplot.text(detection.x_min, detection.y_min - 20, info, color='red', fontdict={'size': 100})
 
-    pyplot.savefig(f'image/result.{file_path.split("/")[-1]}', bbox_inches='tight', pad_inches=0)
+    file_name = file_path.split('/')[-1]
+
+    pyplot.savefig(f'image/result.{file_name}', bbox_inches='tight', pad_inches=0)
 
 
 load_dotenv()

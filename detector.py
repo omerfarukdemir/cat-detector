@@ -1,3 +1,4 @@
+import itertools
 import os
 from typing import List, Dict, Set, Optional
 import numpy
@@ -32,22 +33,20 @@ class Detector:
 
         image: numpy.ndarray = self.adjust_image(image)
 
-        model_output: List[numpy.ndarray] = self.model.predict(image)
+        model_outputs: List[numpy.ndarray] = self.model.predict(image)
 
-        detections: List[Detection] = self.decode(model_output, width, height)
+        detections: List[Detection] = self.decode(model_outputs, width, height)
         detections: List[Detection] = self.filter_overlapping_detections(detections)
 
         return detections
 
-    def decode(self, model_output: List[numpy.ndarray], width: int, height: int) -> List[Detection]:
+    def decode(self, model_outputs: List[numpy.ndarray], width: int, height: int) -> List[Detection]:
         detections: List[Detection] = []
 
         nb_box = 3
 
-        for i in range(len(model_output)):
-            result: numpy.ndarray = model_output[i][0]
-
-            anchors: List[int] = ANCHORS[i]
+        for model_putput, anchors in zip(model_outputs, ANCHORS):
+            result = model_putput[0]
 
             grid_height, grid_width = result.shape[:2]
 
@@ -56,30 +55,26 @@ class Detector:
             result[..., 4:] = sigmoid(result[..., 4:])
             result[..., 5:] = result[..., 4][..., numpy.newaxis] * result[..., 5:]
 
-            for j in range(grid_height * grid_width):
-                row = j / grid_width
-                column = j % grid_width
+            for row, column in itertools.product(range(grid_height), range(grid_width)):
                 for b in range(nb_box):
                     scores: List[float] = result[int(row)][column][b][5:]
                     for index, score in enumerate(scores):
-                        if score > THRESHOLD:
-                            label: Optional[str] = self.index_label_dict.get(index)
-                            if label is not None:
-                                x, y, w, h = result[int(row)][int(column)][b][:4]
+                        label: Optional[str] = self.index_label_dict.get(index)
+                        if label is not None and score > THRESHOLD:
+                            x, y, w, h = result[int(row)][int(column)][b][:4]
 
-                                x = (column + x) / grid_width
-                                y = (row + y) / grid_height
+                            x = (column + x) / grid_width
+                            y = (row + y) / grid_height
 
-                                w = anchors[2 * b + 0] * numpy.exp(w) / WIDTH
-                                h = anchors[2 * b + 1] * numpy.exp(h) / HEIGHT
+                            w = anchors[2 * b + 0] * numpy.exp(w) / WIDTH
+                            h = anchors[2 * b + 1] * numpy.exp(h) / HEIGHT
 
-                                x_min = int((x - w / 2) * width)
-                                y_min = int((y - h / 2) * height)
-                                x_max = int((x + w / 2) * width)
-                                y_max = int((y + h / 2) * height)
+                            x_min = int((x - w / 2) * width)
+                            y_min = int((y - h / 2) * height)
+                            x_max = int((x + w / 2) * width)
+                            y_max = int((y + h / 2) * height)
 
-                                detection = Detection(label, score, x_min, y_min, x_max, y_max)
-                                detections.append(detection)
+                            detections.append(Detection(label, score, x_min, y_min, x_max, y_max))
 
         return detections
 

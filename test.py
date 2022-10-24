@@ -38,7 +38,7 @@ def draw(file_path: str, detections: List[Detection]):
 
         axes.add_patch(rectangle)
 
-        label = '%s [%.2f]' % (detection.label.upper(), detection.score)
+        label = f'{detection.label.upper()} [{detection.score}]'
 
         pyplot.text(detection.x_min, detection.y_min - 20, label, color='red', fontdict={'size': 100})
 

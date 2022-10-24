@@ -8,7 +8,7 @@ ANCHORS: List[List[int]] = [
     [10, 13, 16, 30, 33, 23]
 ]
 THRESHOLD: float = 0.6
-INTERSECTION_THRESHOLD: float = 0.6
+INTERSECTION_THRESHOLD: float = 0.5
 INDEX_LABEL_DICT: Dict[int, str] = {
     0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorbike', 4: 'aeroplane', 5: 'bus', 6: 'train', 7: 'truck', 8: 'boat',
     9: 'traffic light', 10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench', 14: 'bird', 15: 'cat',

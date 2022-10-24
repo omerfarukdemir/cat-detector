@@ -1,14 +1,13 @@
 import json
-from typing import List
+from typing import List, Optional
 
 from PIL import Image
 from dotenv import load_dotenv
-from flask import Flask, request, abort, Response
+from flask import Flask, request, Response
 from werkzeug.datastructures import FileStorage
 
 from detector import Detector
 from detection import Detection
-
 
 load_dotenv()
 
@@ -19,15 +18,16 @@ detector = Detector({'cat'})
 
 @app.route('/detect', methods=['POST'])
 def detect():
-    if request.method == 'POST':
-        file: FileStorage = request.files.get('image')
+    # TODO: get file as numpy.ndarray or base64
+    file: Optional[FileStorage] = request.files.get('image')
 
-        image: Image = Image.open(file)
+    if file is None:
+        return Response(status=400)
 
-        detections: List[Detection] = detector.detect(image)
+    image: Image = Image.open(file)
 
-        response = json.dumps([detection.__dict__ for detection in detections])
+    detections: List[Detection] = detector.detect(image)
 
-        return Response(response=response, mimetype='application/json')
+    response = json.dumps([detection.__dict__ for detection in detections])
 
-    abort(404)
+    return Response(status=200, response=response, mimetype='application/json')

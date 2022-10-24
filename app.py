@@ -1,33 +1,32 @@
-import json
-from typing import List, Optional
+import base64
+from io import BytesIO
+from typing import List
 
 from PIL import Image
 from dotenv import load_dotenv
-from flask import Flask, request, Response
-from werkzeug.datastructures import FileStorage
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-from detector import Detector
 from detection import Detection
+from detector import Detector
 
 load_dotenv()
 
-app = Flask(__name__)
+app = FastAPI()
 
 detector = Detector({'cat'})
 
 
-@app.route('/detect', methods=['POST'])
-def detect():
-    # TODO: get file as numpy.ndarray or base64
-    file: Optional[FileStorage] = request.files.get('image')
+class Request(BaseModel):
+    image: str
 
-    if file is None:
-        return Response(status=400)
 
-    image: Image = Image.open(file)
+@app.post("/detect")
+def detect(request: Request):
+    image_bytes: BytesIO = BytesIO(base64.b64decode(request.image))
+
+    image: Image = Image.open(image_bytes)
 
     detections: List[Detection] = detector.detect(image)
 
-    response = json.dumps([detection.__dict__ for detection in detections])
-
-    return Response(status=200, response=response, mimetype='application/json')
+    return detections
